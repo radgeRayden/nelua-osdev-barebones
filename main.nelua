@@ -85,7 +85,7 @@ local function terminal_initialize ()
   terminal_buffer = (@pointer(array(uint16, 0)))(0xB8000)
   for y=0_usize, VGA_HEIGHT-1 do
     for x=0_usize, VGA_WIDTH-1 do
-      local index : usize <const> = y * VGA_WIDTH + x
+      local index : usize = y * VGA_WIDTH + x
       terminal_buffer[index] = vga_entry(' '_uint8, terminal_color)
     end
   end
@@ -96,7 +96,7 @@ local function terminal_setcolor (color : uint8)
 end
 
 local function terminal_putentryat (c : int8, color : uint8, x : usize, y : usize)
-  local index : usize <const> = y * VGA_WIDTH + x
+  local index : usize = y * VGA_WIDTH + x
   terminal_buffer[index] = vga_entry(c, color)
 end
 
