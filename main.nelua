@@ -122,7 +122,7 @@ local function terminal_putchar (c : int8)
 end
 
 local function terminal_write (data : bytebuf <const>, size : usize)
-  for i=0,size do
+  for i=0,size-1 do
     terminal_putchar(data[i])
   end
 end
