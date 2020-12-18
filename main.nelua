@@ -100,6 +100,21 @@ local function terminal_putentryat (c : int8, color : uint8, x : usize, y : usiz
   terminal_buffer[index] = vga_entry(c, color)
 end
 
+local function terminal_scroll ()
+  for y = 1, VGA_HEIGHT-1 do
+    for x = 0, VGA_WIDTH-1 do
+      local iorigin : usize = y * VGA_WIDTH + x
+      local idest : usize = (y - 1) * VGA_WIDTH + x
+      terminal_buffer[idest] = terminal_buffer[iorigin]
+    end
+  end
+  -- clear last line
+  for x = 0, VGA_WIDTH - 1 do
+    local index : usize = (VGA_HEIGHT - 1) * VGA_WIDTH + x
+    terminal_buffer[index] = '_'_int8
+  end
+end
+
 local function terminal_putchar (c : int8)
   if c == '\n'_int8 then
     goto newline
@@ -118,7 +133,8 @@ local function terminal_putchar (c : int8)
   terminal_column = 0
   terminal_row = terminal_row + 1
   if terminal_row == VGA_HEIGHT then
-      terminal_row = 0
+    terminal_scroll()
+    terminal_row = VGA_HEIGHT - 1
   end
 end
 
@@ -134,14 +150,10 @@ end
 
 local function kernel_main () <entrypoint, codename 'kernel_main'>
   terminal_initialize()
-  local counter : uint32
-  while counter < 100 do
-    counter = counter + 1
-    terminal_writestring("Hello, kernel World! ")
-    terminal_writestring(uint_tostring(0xFFFFFFFF))
-    terminal_writestring("\n")
-    terminal_writestring("Hello, kernel World! ")
-    terminal_writestring(uint_tostring(01))
+  for i=1,30 do
+    terminal_writestring("Hello, kernel World!")
+    terminal_writestring(uint_tostring(i))
     terminal_writestring("\n")
   end
+  terminal_writestring("if scrolling is working correctly, this message should be at the bottom.\n")
 end
