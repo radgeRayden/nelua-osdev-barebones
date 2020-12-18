@@ -41,6 +41,34 @@ local function strlen(str : bytebuf <const>) <inline>
   return len
 end
 
+-- a u32 number in base 10 can be up to 11 characters
+local uistr_sbuf : array(int8, 12) -- scratch buffer for u32->string conversion
+local function uint_tostring (number : uint32) : cstring
+  local width : uint8
+  -- we write the number backwards because it's easier
+  for i=0,#uistr_sbuf-1 do
+    local d : uint8 = (number % 10) + 48
+    uistr_sbuf[i] = d
+    width = width + 1
+    number = number // 10
+    -- after we divide it enough times, it is zero. If number
+    -- was 0 we already wrote '0', otherwise by now we can
+    -- know if it's done.
+    if number == 0 then
+      break
+    end
+  end
+  -- and then reverse it
+  for i=0,(width//2)-1 do
+    local iend = width - i - 1
+    local temp = uistr_sbuf[i]
+    uistr_sbuf[i] = uistr_sbuf[iend]
+    uistr_sbuf[iend] = temp
+  end
+
+  return &uistr_sbuf[0]
+end
+
 local VGA_WIDTH : usize <const> = 80
 local VGA_HEIGHT : usize <const> = 25
 
@@ -104,6 +132,12 @@ local function terminal_writestring(data : cstring <const>)
 end
 
 local function kernel_main () <entrypoint, codename 'kernel_main'>
-    terminal_initialize()
-    terminal_writestring("Hello, kernel World!\nSecond line!")
+  terminal_initialize()
+  local counter : uint32
+  while counter < 100 do
+    counter = counter + 1
+    terminal_writestring("Hello, kernel World!")
+    terminal_writestring(uint_tostring(counter))
+    terminal_writestring("\n")
+  end
 end
