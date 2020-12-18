@@ -1,0 +1,99 @@
+-- -*- mode: lua; eval: (flycheck-mode -1) -*-
+## pragmas.unitname = ''
+## pragmas.nochecks = true
+## pragmas.nogc = true
+
+local bytebuf = @pointer(array(int8, 0))
+
+local vga_color = @enum {
+    BLACK = 0,
+    BLUE = 1,
+    GREEN = 2,
+    CYAN = 3,
+    RED = 4,
+    MAGENTA = 5,
+    BROWN = 6,
+    LIGHT_GREY = 7,
+    DARK_GREY = 8,
+    LIGHT_BLUE = 9,
+    LIGHT_GREEN = 10,
+    LIGHT_CYAN = 11,
+    LIGHT_RED = 12,
+    LIGHT_MAGENTA = 13,
+    LIGHT_BROWN = 14,
+    WHITE = 15,
+}
+
+local function vga_entry_color (fg : vga_color, bg : vga_color) : uint8 <inline>
+  return fg | bg << 4
+end
+
+local function vga_entry (uc : uint8, color : uint8)
+  return (@uint16)(uc) | (@uint16)(color) << 8
+end
+
+local function strlen(str : bytebuf <const>) <inline>
+  local len : usize = 0
+  -- local str : pointer(array(int8, 0)) = str
+  while (str[len] ~= 0) do
+    len = len + 1
+  end
+  return len
+end
+
+local VGA_WIDTH : usize <const> = 80
+local VGA_HEIGHT : usize <const> = 25
+
+local terminal_row : usize
+local terminal_column : usize
+local terminal_color : uint8
+local terminal_buffer : pointer(array(uint16, 0))
+
+local function terminal_initialize ()
+  terminal_row = 0
+  terminal_column = 0
+  terminal_color = vga_entry_color(vga_color.LIGHT_GREY, vga_color.BLACK)
+  terminal_buffer = (@pointer(array(uint16, 0)))(0xB8000)
+  for y=0_usize, VGA_HEIGHT do
+    for x=0_usize, VGA_WIDTH do
+      local index : usize <const> = y * VGA_WIDTH + x
+      terminal_buffer[index] = vga_entry(' '_uint8, terminal_color)
+    end
+  end
+end
+
+local function terminal_setcolor (color : uint8)
+  terminal_color = color
+end
+
+local function terminal_putentryat (c : int8, color : uint8, x : usize, y : usize)
+  local index : usize <const> = y * VGA_WIDTH + x
+  terminal_buffer[index] = vga_entry(c, color)
+end
+
+local function terminal_putchar (c : int8)
+  terminal_putentryat(c, terminal_color, terminal_column, terminal_row)
+  terminal_column = terminal_column + 1
+  if terminal_column == VGA_WIDTH then
+    terminal_column = 0
+    terminal_row = terminal_row + 1
+    if (terminal_row == VGA_HEIGHT) then
+        terminal_row = 0
+    end
+  end
+end
+
+local function terminal_write (data : bytebuf <const>, size : usize)
+  for i=0,size do
+    terminal_putchar(data[i])
+  end
+end
+
+local function terminal_writestring(data : cstring <const>)
+  terminal_write(data, strlen(data))
+end
+
+local function kernel_main () <entrypoint, codename 'kernel_main'>
+    terminal_initialize()
+    terminal_writestring("Hello, kernel World!\n")
+end
