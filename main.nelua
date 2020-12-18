@@ -101,7 +101,7 @@ local function terminal_putentryat (c : int8, color : uint8, x : usize, y : usiz
 end
 
 local function terminal_putchar (c : int8)
-  if c == '\n'_uint8 then
+  if c == '\n'_int8 then
     goto newline
   end
 
