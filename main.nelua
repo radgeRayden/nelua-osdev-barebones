@@ -72,14 +72,24 @@ local function terminal_putentryat (c : int8, color : uint8, x : usize, y : usiz
 end
 
 local function terminal_putchar (c : int8)
+  if c == '\n'_uint8 then
+    goto newline
+  end
+
   terminal_putentryat(c, terminal_color, terminal_column, terminal_row)
   terminal_column = terminal_column + 1
+
   if terminal_column == VGA_WIDTH then
-    terminal_column = 0
-    terminal_row = terminal_row + 1
-    if (terminal_row == VGA_HEIGHT) then
-        terminal_row = 0
-    end
+    goto newline
+  end
+
+  return
+
+  :: newline ::
+  terminal_column = 0
+  terminal_row = terminal_row + 1
+  if terminal_row == VGA_HEIGHT then
+      terminal_row = 0
   end
 end
 
@@ -95,5 +105,5 @@ end
 
 local function kernel_main () <entrypoint, codename 'kernel_main'>
     terminal_initialize()
-    terminal_writestring("Hello, kernel World!\n")
+    terminal_writestring("Hello, kernel World!\nSecond line!")
 end
