@@ -28,7 +28,7 @@ local function vga_entry_color (fg : vga_color, bg : vga_color) : uint8 <inline>
   return fg | bg << 4
 end
 
-local function vga_entry (uc : uint8, color : uint8)
+local function vga_entry (uc : uint8, color : uint8) <inline>
   return (@uint16)(uc) | (@uint16)(color) << 8
 end
 
