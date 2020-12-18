@@ -81,7 +81,7 @@ local terminal_buffer : pointer(array(uint16, 0))
 local function terminal_initialize ()
   terminal_row = 0
   terminal_column = 0
-  terminal_color = vga_entry_color(vga_color.LIGHT_GREY, vga_color.BLACK)
+  terminal_color = vga_entry_color(vga_color.GREEN, vga_color.BLACK)
   terminal_buffer = (@pointer(array(uint16, 0)))(0xB8000)
   for y=0_usize, VGA_HEIGHT-1 do
     for x=0_usize, VGA_WIDTH-1 do
