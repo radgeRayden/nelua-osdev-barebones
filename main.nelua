@@ -110,8 +110,7 @@ local function terminal_scroll ()
   end
   -- clear last line
   for x = 0, VGA_WIDTH - 1 do
-    local index : usize = (VGA_HEIGHT - 1) * VGA_WIDTH + x
-    terminal_buffer[index] = '_'_int8
+    terminal_putentryat(' '_int8, terminal_color, x, VGA_HEIGHT - 1)
   end
 end
 
